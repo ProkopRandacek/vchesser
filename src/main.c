@@ -1,47 +1,53 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "list.h"
 
-#define pawn   0b00000000
-#define knight 0b00000001
-#define bishop 0b00000010
-#define rock   0b00000011
-#define queen  0b00000100
-#define king   0b00000101
+#include "bitboard.h"
 
-#define black  0b00001000
-#define white  0b00000000
+// create default state
+state* sdefault(void) {
+	state* s = malloc(sizeof(state));
 
-/*
- * x    - 3 bits
- * y    - 3 bits
- * type - 3 bits
- * clr  - 1 bit
- * free - 6 bits
- * ==============
- *       10 bites -> 2 bytes -> unsigned short
- */
+	s->black.pawn = 0;
+	for (int i = 0; i < 8; i++) s->black.pawn |= mask(i, 1);
+	s->black.rook   = mask(0, 0) | mask(7, 0);
+	s->black.knight = mask(1, 0) | mask(6, 0);
+	s->black.bishop = mask(2, 0) | mask(5, 0);
+	s->black.king   = mask(3, 0);
+	s->black.queen  = mask(4, 0);
+
+	s->white.pawn = 0;
+	for (int i = 0; i < 8; i++) s->white.pawn |= mask(i, 6);
+	s->white.rook   = mask(0, 7) | mask(7, 7);
+	s->white.knight = mask(1, 7) | mask(6, 7);
+	s->white.bishop = mask(2, 7) | mask(5, 7);
+	s->white.queen  = mask(3, 7);
+	s->white.king   = mask(4, 7);
+
+	return s;
+}
 
 int main(void) {
-	int i = atexit(checkatend);
-	if (i != 0) fprintf(stderr, "cannot set exit function\n");
+	state* s = sdefault();
 
-	/*piece_t var[4] = {(piece_t)0, (piece_t)1, (piece_t)2, (piece_t)3};
+	fstateprint(*s);
 
-	list* l = linit(4, var);
+	uint64_t mask;
+	mask = 1 << 8;
+	bprint(mask);
+	mask = 1;
+	mask <<= 8;
+	bprint(mask);
 
-	lprint(l);
 
-	ldel(l, 3);
-	printf("deleted\n");
-	lprint(l);
-	lappend(l, (piece_t)15);
-	printf("added\n");
-	lprint(l);
+	free(s);
 
-	lfree(l);*/
-	bprint(0b0000001000000000);
-	bprint(0b0000000111000000);
-	bprint(0b0000000000111000);
-	bprint(0b0000000000000111);
+	return 0;
+
+	//useful:
+	//__builtin_clzl
+	//__builtin_ctzl
+	//__builtin_popcount
+	//__builtin_bswap64
+	//__builtin_ffs
 }
+
