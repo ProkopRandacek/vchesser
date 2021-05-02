@@ -1,5 +1,5 @@
 struct Move {
-	src byte
-	dst byte
+	src   byte
+	dst   byte
 	promo Piece = .empty
 }

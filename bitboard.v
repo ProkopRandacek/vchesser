@@ -132,5 +132,5 @@ fn fboardprint(b Board, pos int, hl u64) {
 	}
 	println(' +----------------+')
 	println('  0 1 2 3 4 5 6 7')
-	println('player: ${b.color}')
+	println('player: $b.color')
 }

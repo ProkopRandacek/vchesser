@@ -3,7 +3,7 @@ fn C.__builtin_clzl(u64) int
 
 fn get_my(b Board, plr bool) u64 {
 	mut my := u64(0)
-	for i in b.pieces[b.color] {
+	for i in b.pieces[int(plr)] {
 		my |= i
 	}
 	return my
@@ -62,6 +62,8 @@ fn get_p_attacks(me u64, he u64, pos int, plr bool) u64 {
 	if plr { // upper player
 		//          those side attacks           and moving one forward if empty
 		attacks := (pawn_upper_attacks[pos] & he) | ((ones[pos] << 8) & ~occ)
+		println('attacks')
+		bbprint(pawn_upper_attacks[pos])
 		// if pawn is at startpos      and  the pos above    is     free    and the above abot too
 		if ((ones[pos] & startpos) != 0) && (((ones[pos] << 8) & occ) == 0)
 			&& (((ones[pos] << 16) & occ) == 0) {
@@ -90,7 +92,11 @@ fn get_n_attacks(me u64, pos int) u64 {
 
 fn get_attacks(b Board, pos int) ?u64 {
 	me := get_my(b, int(b.color) != 0)
+	println('me')
+	bbprint(me)
 	he := get_my(b, int(b.color) == 0)
+	println('he')
+	bbprint(he)
 	if b.pieces[b.color][Piece.pawn] & ones[pos] != 0 {
 		return get_p_attacks(me, he, pos, int(b.color) != 0)
 	} else if b.pieces[b.color][Piece.rook] & ones[pos] != 0 {
@@ -104,5 +110,5 @@ fn get_attacks(b Board, pos int) ?u64 {
 	} else if b.pieces[b.color][Piece.queen] & ones[pos] != 0 {
 		return get_q_attacks(me, he, pos)
 	}
-	return error("no piece on that position")
+	return error('no piece on that position')
 }

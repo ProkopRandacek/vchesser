@@ -42,9 +42,7 @@ fn main() {
 				exit(0)
 			}
 			'm' { // move
-				selecting = get_attacks(board, pos) or {
-					return
-				}
+				selecting = get_attacks(board, pos) or { return }
 				if selecting == 0 { // if no available moves for this piece, dont move
 					selecting = get_my(board, int(board.color) != 0)
 					continue
@@ -62,11 +60,20 @@ fn main() {
 				pos = next(selecting, pos, 1)
 			}
 			'p' { // place
-				move := Move{src: byte(src), dst: byte(pos), promo: .empty}
+				move := Move{
+					src: byte(src)
+					dst: byte(pos)
+					promo: .empty
+				}
 				board = board.apply_move(move)
 				moving = false
-				if board.color == Color.white { board.color = Color.black }
-				else { board.color = Color.white }
+
+				if board.color == Color.white {
+					board.color = Color.black
+				} else {
+					board.color = Color.white
+				}
+
 				selecting = get_my(board, int(board.color) != 0)
 				pos = next(selecting, pos, 1)
 			}

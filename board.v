@@ -20,7 +20,7 @@ mut:
 }
 
 fn (mut b Board) init_default() {
-	b.color = Color.white
+	b.color = Color.black
 
 	for i in 0 .. 8 {
 		b.pieces[Color.black][Piece.pawn] |= mask(i, 1)
@@ -30,11 +30,14 @@ fn (mut b Board) init_default() {
 	}
 
 	// upper
+	/*
 	b.pieces[Color.black][Piece.rook] = mask(0, 0) | mask(7, 0)
 	b.pieces[Color.black][Piece.knight] = mask(1, 0) | mask(6, 0)
 	b.pieces[Color.black][Piece.bishop] = mask(2, 0) | mask(5, 0)
 	b.pieces[Color.black][Piece.king] = mask(3, 0)
-	b.pieces[Color.black][Piece.queen] = mask(4, 0)
+	b.pieces[Color.black][Piece.queen] = mask(4, 0)*/
+
+	b.pieces[Color.white][Piece.pawn] |= mask(2, 2)
 
 	// lower
 	b.pieces[Color.white][Piece.rook] = mask(0, 7) | mask(7, 7)
@@ -50,12 +53,12 @@ fn (b Board) piece_on(pos byte, color Color) ?Piece {
 			return Piece(i)
 		}
 	}
-	return error("asked position is empty")
+	return error('asked position is empty')
 }
 
 fn (mut b Board) clear_pos(pos byte) {
 	mask := ~ones[pos]
-	for c in 0 .. 2{
+	for c in 0 .. 2 {
 		for p in 0 .. 6 {
 			b.pieces[c][p] &= mask
 		}
@@ -65,7 +68,7 @@ fn (mut b Board) clear_pos(pos byte) {
 fn (b Board) apply_move(m Move) Board {
 	mut piece := m.promo
 	if m.promo == Piece.empty {
-		piece = b.piece_on(m.src, b.color) or {exit(0)}
+		piece = b.piece_on(m.src, b.color) or { exit(0) }
 	}
 
 	mut nb := b
