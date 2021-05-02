@@ -85,22 +85,22 @@ fn bb2char(bb u64, mut board []rune, c rune) {
 }
 
 // this takes like a second
-fn fstateprint(s State, pos int, hl u64) {
+fn fboardprint(b Board, pos int, hl u64) {
 	mut board := []rune{len: 64, init: ` `}
 
-	bb2char(s.p[1].p, mut board, `P`)
-	bb2char(s.p[1].r, mut board, `R`)
-	bb2char(s.p[1].n, mut board, `N`)
-	bb2char(s.p[1].b, mut board, `B`)
-	bb2char(s.p[1].k, mut board, `K`)
-	bb2char(s.p[1].q, mut board, `Q`)
+	bb2char(b.pieces[Color.black][Piece.pawn], mut board, `P`)
+	bb2char(b.pieces[Color.black][Piece.rook], mut board, `R`)
+	bb2char(b.pieces[Color.black][Piece.knight], mut board, `N`)
+	bb2char(b.pieces[Color.black][Piece.bishop], mut board, `B`)
+	bb2char(b.pieces[Color.black][Piece.king], mut board, `K`)
+	bb2char(b.pieces[Color.black][Piece.queen], mut board, `Q`)
 
-	bb2char(s.p[0].p, mut board, `p`)
-	bb2char(s.p[0].r, mut board, `r`)
-	bb2char(s.p[0].n, mut board, `n`)
-	bb2char(s.p[0].b, mut board, `b`)
-	bb2char(s.p[0].k, mut board, `k`)
-	bb2char(s.p[0].q, mut board, `q`)
+	bb2char(b.pieces[Color.white][Piece.pawn], mut board, `p`)
+	bb2char(b.pieces[Color.white][Piece.rook], mut board, `r`)
+	bb2char(b.pieces[Color.white][Piece.knight], mut board, `n`)
+	bb2char(b.pieces[Color.white][Piece.bishop], mut board, `b`)
+	bb2char(b.pieces[Color.white][Piece.king], mut board, `k`)
+	bb2char(b.pieces[Color.white][Piece.queen], mut board, `q`)
 
 	mut m := u64(1)
 	println('  0 1 2 3 4 5 6 7')
@@ -111,11 +111,11 @@ fn fstateprint(s State, pos int, hl u64) {
 			mut t := '${board[y * 8 + x]} '
 
 			// color trash code
-			if (mask(x, y) & hl) > 0 {
-				t = term.black(term.bg_green(t))
-			}
 			if x + y * 8 == pos {
 				t = term.black(term.bg_cyan(t))
+			}
+			if (mask(x, y) & hl) > 0 {
+				t = term.black(term.bg_green(t))
 			}
 			if (x + y) % 2 == 0 {
 				t = term.white(term.bg_black(t))
@@ -132,4 +132,5 @@ fn fstateprint(s State, pos int, hl u64) {
 	}
 	println(' +----------------+')
 	println('  0 1 2 3 4 5 6 7')
+	println('player: ${b.color}')
 }

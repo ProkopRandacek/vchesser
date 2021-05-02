@@ -1,13 +1,12 @@
 fn C.__builtin_ctzl(u64) int
 fn C.__builtin_clzl(u64) int
 
-fn get_occ(s State) u64 {
-	return s.p[0].p | s.p[0].r | s.p[0].n | s.p[0].b | s.p[0].k | s.p[0].q | s.p[1].p | s.p[1].r | s.p[1].n | s.p[1].b | s.p[1].k | s.p[1].q
-}
-
-fn get_my(s State, plr bool) u64 {
-	i := int(plr)
-	return s.p[i].p | s.p[i].r | s.p[i].n | s.p[i].b | s.p[i].k | s.p[i].q
+fn get_my(b Board, plr bool) u64 {
+	mut my := u64(0)
+	for i in b.pieces[b.color] {
+		my |= i
+	}
+	return my
 }
 
 fn bit_scan(bb u64, reverse bool) int {
@@ -62,16 +61,18 @@ fn get_p_attacks(me u64, he u64, pos int, plr bool) u64 {
 	occ := me | he
 	if plr { // upper player
 		//          those side attacks           and moving one forward if empty
-		attacks := (pawn_upper_attacks[pos] & he) | ((ones[pos] << 8) & ~(occ))
+		attacks := (pawn_upper_attacks[pos] & he) | ((ones[pos] << 8) & ~occ)
 		// if pawn is at startpos      and  the pos above    is     free    and the above abot too
-		if ((ones[pos] & startpos) != 0) && (((ones[pos] << 8) & occ) == 0) && (((ones[pos] << 16) & occ) == 0) {
+		if ((ones[pos] & startpos) != 0) && (((ones[pos] << 8) & occ) == 0)
+			&& (((ones[pos] << 16) & occ) == 0) {
 			// add the pos above above as a possible move
 			return attacks | (ones[pos] << 16)
 		}
 		return attacks
 	} else { // lower player same but bit shifting to the other side
-		attacks := (pawn_lower_attacks[pos] & he) | (ones[pos] >> 8 & ~(occ))
-		if ((ones[pos] & startpos) != 0) && (((ones[pos] >> 8) & occ) == 0) && (((ones[pos] >> 16) & occ) == 0) {
+		attacks := (pawn_lower_attacks[pos] & he) | (ones[pos] >> 8 & ~occ)
+		if ((ones[pos] & startpos) != 0) && (((ones[pos] >> 8) & occ) == 0)
+			&& (((ones[pos] >> 16) & occ) == 0) {
 			return attacks | (ones[pos] >> 16)
 		}
 		return attacks
@@ -85,4 +86,23 @@ fn get_k_attacks(me u64, pos int) u64 {
 
 fn get_n_attacks(me u64, pos int) u64 {
 	return filter_own_capture(me, knight_attacks[pos])
+}
+
+fn get_attacks(b Board, pos int) ?u64 {
+	me := get_my(b, int(b.color) != 0)
+	he := get_my(b, int(b.color) == 0)
+	if b.pieces[b.color][Piece.pawn] & ones[pos] != 0 {
+		return get_p_attacks(me, he, pos, int(b.color) != 0)
+	} else if b.pieces[b.color][Piece.rook] & ones[pos] != 0 {
+		return get_r_attacks(me, he, pos)
+	} else if b.pieces[b.color][Piece.knight] & ones[pos] != 0 {
+		return get_n_attacks(me, pos)
+	} else if b.pieces[b.color][Piece.bishop] & ones[pos] != 0 {
+		return get_b_attacks(me, he, pos)
+	} else if b.pieces[b.color][Piece.king] & ones[pos] != 0 {
+		return get_k_attacks(me, pos)
+	} else if b.pieces[b.color][Piece.queen] & ones[pos] != 0 {
+		return get_q_attacks(me, he, pos)
+	}
+	return error("no piece on that position")
 }

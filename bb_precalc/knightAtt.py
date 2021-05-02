@@ -20,4 +20,5 @@ for j in range(64):
         print(out)
         out = ""
     out += add + ", "
+print(out)
 print()

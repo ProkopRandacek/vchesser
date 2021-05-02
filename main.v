@@ -1,42 +1,78 @@
 // player values:
 // true  = upper = 1
 // false = lower = 0
+import os
 
-fn s_default() State {
-	mut s := State{}
-
-	s.plr = true
-
-	for i in 0 .. 8 {
-		s.p[1].p |= mask(i, 1)
+fn next(s u64, p int, o int) int {
+	mut pos := p
+	for {
+		pos += o
+		if pos > 63 {
+			pos = 0
+		}
+		if pos < 0 {
+			pos = 64
+			continue
+		}
+		if (ones[pos] & s) != 0 {
+			break
+		}
 	}
-	for i in 0 .. 8 {
-		s.p[0].p |= mask(i, 6)
-	}
-
-	// upper
-	s.p[1].r = mask(0, 0) | mask(7, 0)
-	s.p[1].n = mask(1, 0) | mask(6, 0)
-	s.p[1].b = mask(2, 0) | mask(5, 0)
-	s.p[1].k = mask(3, 0)
-	s.p[1].q = mask(4, 0)
-
-	// lower
-	s.p[0].r = mask(0, 7) | mask(7, 7)
-	s.p[0].n = mask(1, 7) | mask(6, 7)
-	s.p[0].b = mask(2, 7) | mask(5, 7)
-	s.p[0].q = mask(3, 7)
-	s.p[0].k = mask(4, 7)
-
-	return s
+	return pos
 }
 
 fn main() {
-	state := s_default()
-	me := get_my(state,  state.plr)
-	he := get_my(state, !state.plr)
-	bbprint(he)
-	pos := 1*8+2
-	attacks := get_p_attacks(me, he, pos, state.plr)
-	fstateprint(state, pos, attacks)
+	mut board := Board{}
+	board.init_default()
+	mut pos := 0
+	mut moving := false
+	mut src := 0
+	mut selecting := get_my(board, int(board.color) != 0)
+	for {
+		fboardprint(board, pos, if moving { selecting } else { 0 })
+		inp := os.input('~: ')
+		match inp {
+			'n' { // next
+				pos = next(selecting, pos, 1)
+			}
+			'b' { // back
+				pos = next(selecting, pos, -1)
+			}
+			'q' { // quit
+				exit(0)
+			}
+			'm' { // move
+				selecting = get_attacks(board, pos) or {
+					return
+				}
+				if selecting == 0 { // if no available moves for this piece, dont move
+					selecting = get_my(board, int(board.color) != 0)
+					continue
+				}
+				moving = true
+				src = pos
+				pos = next(selecting, pos, 1)
+			}
+			'c' { // cancel move
+				if !moving {
+					continue
+				}
+				moving = false
+				selecting = get_my(board, int(board.color) != 0)
+				pos = next(selecting, pos, 1)
+			}
+			'p' { // place
+				move := Move{src: byte(src), dst: byte(pos), promo: .empty}
+				board = board.apply_move(move)
+				moving = false
+				if board.color == Color.white { board.color = Color.black }
+				else { board.color = Color.white }
+				selecting = get_my(board, int(board.color) != 0)
+				pos = next(selecting, pos, 1)
+			}
+			else {
+				continue
+			}
+		}
+	}
 }
