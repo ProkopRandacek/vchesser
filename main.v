@@ -1,7 +1,7 @@
 // player values:
 // true  = upper = 1
 // false = lower = 0
-import os
+import readline
 
 fn next(s u64, p int, o int) int {
 	mut pos := p
@@ -22,6 +22,9 @@ fn next(s u64, p int, o int) int {
 }
 
 fn main() {
+	mut rl := readline.Readline{}
+	rl.enable_raw_mode_nosig()
+
 	mut board := Board{}
 	board.init_default()
 	mut pos := 0
@@ -30,18 +33,18 @@ fn main() {
 	mut selecting := get_my(board, int(board.color) != 0)
 	for {
 		fboardprint(board, pos, if moving { selecting } else { 0 })
-		inp := os.input('~: ')
+		inp := rl.read_char()
 		match inp {
-			'n' { // next
+			110 { // next
 				pos = next(selecting, pos, 1)
 			}
-			'b' { // back
+			98 { // back
 				pos = next(selecting, pos, -1)
 			}
-			'q' { // quit
+			113 { // quit
 				exit(0)
 			}
-			'm' { // move
+			109 { // move
 				selecting = get_attacks(board, pos) or { return }
 				if selecting == 0 { // if no available moves for this piece, dont move
 					selecting = get_my(board, int(board.color) != 0)
@@ -51,7 +54,7 @@ fn main() {
 				src = pos
 				pos = next(selecting, pos, 1)
 			}
-			'c' { // cancel move
+			99 { // cancel move
 				if !moving {
 					continue
 				}
@@ -59,7 +62,10 @@ fn main() {
 				selecting = get_my(board, int(board.color) != 0)
 				pos = next(selecting, pos, 1)
 			}
-			'p' { // place
+			112 { // place
+				if moving == false {
+					continue
+				}
 				move := Move{
 					src: byte(src)
 					dst: byte(pos)

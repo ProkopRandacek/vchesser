@@ -30,14 +30,11 @@ fn (mut b Board) init_default() {
 	}
 
 	// upper
-	/*
 	b.pieces[Color.black][Piece.rook] = mask(0, 0) | mask(7, 0)
 	b.pieces[Color.black][Piece.knight] = mask(1, 0) | mask(6, 0)
 	b.pieces[Color.black][Piece.bishop] = mask(2, 0) | mask(5, 0)
 	b.pieces[Color.black][Piece.king] = mask(3, 0)
-	b.pieces[Color.black][Piece.queen] = mask(4, 0)*/
-
-	b.pieces[Color.white][Piece.pawn] |= mask(2, 2)
+	b.pieces[Color.black][Piece.queen] = mask(4, 0)
 
 	// lower
 	b.pieces[Color.white][Piece.rook] = mask(0, 7) | mask(7, 7)

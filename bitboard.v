@@ -88,19 +88,19 @@ fn bb2char(bb u64, mut board []rune, c rune) {
 fn fboardprint(b Board, pos int, hl u64) {
 	mut board := []rune{len: 64, init: ` `}
 
-	bb2char(b.pieces[Color.black][Piece.pawn], mut board, `P`)
-	bb2char(b.pieces[Color.black][Piece.rook], mut board, `R`)
-	bb2char(b.pieces[Color.black][Piece.knight], mut board, `N`)
-	bb2char(b.pieces[Color.black][Piece.bishop], mut board, `B`)
-	bb2char(b.pieces[Color.black][Piece.king], mut board, `K`)
-	bb2char(b.pieces[Color.black][Piece.queen], mut board, `Q`)
+	bb2char(b.pieces[Color.black][Piece.pawn], mut board, `♟`)
+	bb2char(b.pieces[Color.black][Piece.rook], mut board, `♜`)
+	bb2char(b.pieces[Color.black][Piece.knight], mut board, `♞`)
+	bb2char(b.pieces[Color.black][Piece.bishop], mut board, `♝`)
+	bb2char(b.pieces[Color.black][Piece.king], mut board, `♚`)
+	bb2char(b.pieces[Color.black][Piece.queen], mut board, `♛`)
 
-	bb2char(b.pieces[Color.white][Piece.pawn], mut board, `p`)
-	bb2char(b.pieces[Color.white][Piece.rook], mut board, `r`)
-	bb2char(b.pieces[Color.white][Piece.knight], mut board, `n`)
-	bb2char(b.pieces[Color.white][Piece.bishop], mut board, `b`)
-	bb2char(b.pieces[Color.white][Piece.king], mut board, `k`)
-	bb2char(b.pieces[Color.white][Piece.queen], mut board, `q`)
+	bb2char(b.pieces[Color.white][Piece.pawn], mut board, `♙`)
+	bb2char(b.pieces[Color.white][Piece.rook], mut board, `♖`)
+	bb2char(b.pieces[Color.white][Piece.knight], mut board, `♘`)
+	bb2char(b.pieces[Color.white][Piece.bishop], mut board, `♗`)
+	bb2char(b.pieces[Color.white][Piece.king], mut board, `♔`)
+	bb2char(b.pieces[Color.white][Piece.queen], mut board, `♕`)
 
 	mut m := u64(1)
 	println('  0 1 2 3 4 5 6 7')
@@ -110,19 +110,18 @@ fn fboardprint(b Board, pos int, hl u64) {
 		for x in 0 .. 8 {
 			mut t := '${board[y * 8 + x]} '
 
-			// color trash code
+			t = term.black(t)
 			if x + y * 8 == pos {
-				t = term.black(term.bg_cyan(t))
+				t = term.red(term.bg_cyan(t))
 			}
 			if (mask(x, y) & hl) > 0 {
-				t = term.black(term.bg_green(t))
+				t = term.bg_green(t)
 			}
-			if (x + y) % 2 == 0 {
-				t = term.white(term.bg_black(t))
+			if (x + y) % 2 != 0 {
+				t = term.bright_bg_black(t)
 			} else {
-				t = term.black(term.bg_white(t))
+				t = term.bright_bg_white(t)
 			}
-			// end of trash code
 
 			print(t)
 
@@ -132,5 +131,6 @@ fn fboardprint(b Board, pos int, hl u64) {
 	}
 	println(' +----------------+')
 	println('  0 1 2 3 4 5 6 7')
-	println('player: $b.color')
+	case := if b.color == .white { 'lower' } else { 'upper' }
+	println('player: $b.color ($case case)')
 }
