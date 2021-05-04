@@ -1,3 +1,8 @@
+[inline]
+fn filter_own_capture(my u64, attacks u64) u64 {
+	return attacks & ~my
+}
+
 fn get_ray_attacks(occ u64, dir int, pos byte) u64 {
 	attacks := ray_attacks[dir * 64 + pos]
 	blocker := attacks & occ
@@ -6,11 +11,6 @@ fn get_ray_attacks(occ u64, dir int, pos byte) u64 {
 		return attacks ^ ray_attacks[dir * 64 + x]
 	}
 	return attacks
-}
-
-[inline]
-fn filter_own_capture(my u64, attacks u64) u64 {
-	return attacks & ~my
 }
 
 fn get_b_attacks(me u64, he u64, pos byte) u64 { // bishop
@@ -59,7 +59,6 @@ fn get_p_attacks(me u64, he u64, pos byte, plr bool) u64 { // pawn
 		}
 		return attacks
 	}
-	return 0
 }
 
 fn get_k_attacks(me u64, occ u64, dang u64, pos byte, b Board) u64 { // king

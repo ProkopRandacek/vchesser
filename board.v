@@ -25,15 +25,11 @@ mut:
 	bits    byte // rightmost 4 bits are for castling
 }
 
-// returns where it is posisble to castle in a given corner
-// 0 = top left, 1 = top right, 2 = bottom left, 3 = bottom right
 fn (b Board) can_castle(pos byte) bool {
 	mask := byte(1 << pos)
 	return (b.bits & mask) != 0
 }
 
-// disables castling
-// 0 = top left, 1 = top right, 2 = bottom left, 3 = bottom right
 fn (mut b Board) disable_castle(pos byte) {
 	mask := byte(1 << pos)
 	b.bits &= ~mask
@@ -42,37 +38,27 @@ fn (mut b Board) disable_castle(pos byte) {
 fn (mut b Board) init_default() { // sets the board state to default (used only at the start of the game)
 	b.color = Color.white
 	b.bits = 0b0000_1111
-
-	/*
-	for i in 0 .. 8 {
-		b.pieces[Color.black][Piece.pawn] |= mask(i, 1)
-	}
-	for i in 0 .. 8 {
-		b.pieces[Color.white][Piece.pawn] |= mask(i, 6)
-	}*/
-
-	// upper
-	b.pieces[Color.black][Piece.rook] = mask(0, 0) | mask(7, 0)
-	b.pieces[Color.black][Piece.knight] = mask(1, 0) | mask(6, 0)
-	b.pieces[Color.black][Piece.bishop] = mask(2, 0) | mask(5, 0)
-	b.pieces[Color.black][Piece.king] = mask(4, 0)
-	b.pieces[Color.black][Piece.queen] = mask(3, 0)
-
-	// lower
-	b.pieces[Color.white][Piece.rook] = mask(0, 7) | mask(7, 7)
-	b.pieces[Color.white][Piece.knight] = mask(1, 7) | mask(6, 7)
-	b.pieces[Color.white][Piece.bishop] = mask(2, 7) | mask(5, 7)
-	b.pieces[Color.white][Piece.king] = mask(4, 7)
-	b.pieces[Color.white][Piece.queen] = mask(3, 7)
+	b.pieces[Color.black][Piece.pawn] = u64(65280)
+	b.pieces[Color.black][Piece.rook] = u64(129)
+	b.pieces[Color.black][Piece.knight] = u64(66)
+	b.pieces[Color.black][Piece.bishop] = u64(36)
+	b.pieces[Color.black][Piece.king] = u64(16)
+	b.pieces[Color.black][Piece.queen] = u64(8)
+	b.pieces[Color.white][Piece.pawn] = u64(71776119061217280)
+	b.pieces[Color.white][Piece.rook] = u64(9295429630892703744)
+	b.pieces[Color.white][Piece.knight] = u64(4755801206503243776)
+	b.pieces[Color.white][Piece.bishop] = u64(2594073385365405696)
+	b.pieces[Color.white][Piece.king] = u64(1152921504606846976)
+	b.pieces[Color.white][Piece.queen] = u64(576460752303423488)
 }
 
-fn (b Board) piece_on(pos byte, color Color) ?Piece { // return what piece is on given position
+fn (b Board) piece_on(pos byte, color Color) Piece { // return what piece is on given position
 	for i in 0 .. 6 {
 		if (b.pieces[color][i] & ones[pos]) != 0 {
 			return Piece(i)
 		}
 	}
-	return error('asked position is empty') // Considering when this fnc is called, this should never happen
+	panic('piece_on(): asked position is empty') // Considering when this fnc is called, this should never happen
 }
 
 fn (mut b Board) clear_pos(pos byte) { // Clears position (sets all bitboards' bits on position `pos` to zero )
@@ -122,12 +108,10 @@ fn (mut b Board) refresh_attacks(c Color) {
 	bb = b.pieces[c][Piece.king] // KING
 	i = ctz(bb)
 	for _ in 0 .. popcount(bb) {
-		att |= get_k_attacks(me, me | he, b.attacks[int(!(int(b.color) != 0))], i, b)
+		att |= get_k_attacks(me, me | he, b.attacks[b.color.neg()], i, b)
 		i = next(bb, i, 1)
 	}
 
-	println(c)
-	bbprint(att)
 	b.attacks[c] = att
 }
 
@@ -135,7 +119,7 @@ fn (mut b Board) apply_move(m Move) Board {
 	mut piece := m.promo
 
 	if m.promo == Piece.empty {
-		piece = b.piece_on(m.src, b.color) or { panic('???') }
+		piece = b.piece_on(m.src, b.color)
 	}
 
 	// disabling castling moves
@@ -160,6 +144,27 @@ fn (mut b Board) apply_move(m Move) Board {
 	}
 
 	mut nb := b
+
+	// move rook when castling
+	if piece == Piece.king {
+		if m.src == 4 { // upper king
+			if m.dst == 2 { // castling left
+				nb.pieces[b.color][Piece.rook] |= ones[3]
+				nb.clear_pos(0)
+			} else if m.dst == 6 { // castling right
+				nb.pieces[b.color][Piece.rook] |= ones[5]
+				nb.clear_pos(7)
+			}
+		} else if m.src == 7 * 8 + 4 { // lower king
+			if m.dst == 7 * 8 + 2 { // castling left
+				nb.pieces[b.color][Piece.rook] |= ones[7 * 8 + 3]
+				nb.clear_pos(7 * 8 + 0)
+			} else if m.dst == 7 * 8 + 6 { // castling right
+				nb.pieces[b.color][Piece.rook] |= ones[7 * 8 + 5]
+				nb.clear_pos(7 * 8 + 7)
+			}
+		}
+	}
 
 	nb.clear_pos(m.src)
 	nb.clear_pos(m.dst) // when capturing

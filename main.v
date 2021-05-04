@@ -1,30 +1,8 @@
-// player values:
-// true  = upper = 1
-// false = lower = 0
 import readline
-
-fn next(s u64, p byte, o i8) byte {
-	mut pos := int(p)
-	for {
-		pos += o
-		if pos > 63 {
-			pos = 0
-		}
-		if pos < 0 {
-			pos = 64
-			continue
-		}
-		if (ones[pos] & s) != 0 {
-			break
-		}
-	}
-	return byte(pos)
-}
 
 fn main() {
 	mut rl := readline.Readline{}
 	rl.enable_raw_mode_nosig()
-
 	mut board := Board{}
 	board.init_default()
 	mut moving := false
@@ -32,7 +10,7 @@ fn main() {
 	mut selecting := get_my(board, int(board.color) != 0)
 	mut pos := next(selecting, 0, 1)
 	for {
-		fboardprint(board, pos, if moving { selecting } else { 0 })
+		print_board(board, pos, if moving { selecting } else { 0 })
 		inp := rl.read_char()
 		board.refresh_attacks(Color.black)
 		board.refresh_attacks(Color.white)

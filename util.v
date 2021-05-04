@@ -39,3 +39,21 @@ fn bit_scan(bb u64, reverse bool) byte {
 		return C.__builtin_ctzl(bb)
 	}
 }
+
+fn next(s u64, p byte, o i8) byte {
+	mut pos := int(p)
+	for {
+		pos += o
+		if pos > 63 {
+			pos = 0
+		}
+		if pos < 0 {
+			pos = 64
+			continue
+		}
+		if (ones[pos] & s) != 0 {
+			break
+		}
+	}
+	return byte(pos)
+}

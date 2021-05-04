@@ -5,7 +5,7 @@ const (
 	b64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 )
 
-fn bprint(bb u64) {
+fn bit_print(bb u64) {
 	println(b64)
 	tz := ctz(bb)
 	lz := clz(bb)
@@ -20,7 +20,7 @@ fn bprint(bb u64) {
 	println(strings.repeat(`0`, lz)) // skip zeros at the end
 }
 
-fn bbprint(bb u64) {
+fn bb_print(bb u64) {
 	mut mask := u64(1)
 	for _ in 0 .. 8 {
 		for _ in 0 .. 8 {
@@ -31,7 +31,7 @@ fn bbprint(bb u64) {
 	}
 }
 
-fn fbbprint(bb u64) {
+fn fbb_print(bb u64) {
 	mut mask := u64(1)
 	println('    0 1 2 3 4 5 6 7')
 	println('  +-----------------+')
@@ -60,7 +60,7 @@ fn bb2char(bb u64, mut board []rune, c rune) {
 	}
 }
 
-fn fboardprint(b Board, pos byte, hl u64) {
+fn print_board(b Board, pos byte, hl u64) {
 	mut board := []rune{len: 64, init: ` `}
 
 	bb2char(b.pieces[Color.black][Piece.pawn], mut board, `♟`)
