@@ -45,7 +45,10 @@ fn main() {
 				exit(0)
 			}
 			109 { // move
-				selecting = get_attacks(board, pos) or { return }
+				if moving {
+					continue
+				}
+				selecting = get_pos_attacks(board, pos) or { return }
 				if selecting == 0 { // if no available moves for this piece, dont move
 					selecting = get_my(board, int(board.color) != 0)
 					continue

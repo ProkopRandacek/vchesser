@@ -1,22 +1,3 @@
-fn C.__builtin_ctzl(u64) int
-fn C.__builtin_clzl(u64) int
-
-fn get_my(b Board, plr bool) u64 {
-	mut my := u64(0)
-	for i in b.pieces[int(plr)] {
-		my |= i
-	}
-	return my
-}
-
-fn bit_scan(bb u64, reverse bool) int {
-	if reverse {
-		return 63 - C.__builtin_clzl(bb)
-	} else {
-		return C.__builtin_ctzl(bb)
-	}
-}
-
 fn get_ray_attacks(occ u64, dir int, pos int) u64 {
 	attacks := ray_attacks[dir * 64 + pos]
 	blocker := attacks & occ
@@ -31,7 +12,7 @@ fn filter_own_capture(my u64, attacks u64) u64 {
 	return attacks & ~my
 }
 
-fn get_b_attacks(me u64, he u64, pos int) u64 {
+fn get_b_attacks(me u64, he u64, pos int) u64 { // bishop
 	occ := me | he
 	mut attacks := get_ray_attacks(occ, 1, pos) | get_ray_attacks(occ, 3, pos) | get_ray_attacks(occ,
 		5, pos) | get_ray_attacks(occ, 7, pos)
@@ -39,7 +20,7 @@ fn get_b_attacks(me u64, he u64, pos int) u64 {
 	return attacks
 }
 
-fn get_r_attacks(me u64, he u64, pos int) u64 {
+fn get_r_attacks(me u64, he u64, pos int) u64 { // rook
 	occ := me | he
 	mut attacks := get_ray_attacks(occ, 0, pos) | get_ray_attacks(occ, 2, pos) | get_ray_attacks(occ,
 		4, pos) | get_ray_attacks(occ, 6, pos)
@@ -47,7 +28,7 @@ fn get_r_attacks(me u64, he u64, pos int) u64 {
 	return attacks
 }
 
-fn get_q_attacks(me u64, he u64, pos int) u64 {
+fn get_q_attacks(me u64, he u64, pos int) u64 { // queen
 	occ := me | he
 	mut attacks := get_ray_attacks(occ, 0, pos) | get_ray_attacks(occ, 1, pos) | get_ray_attacks(occ,
 		2, pos) | get_ray_attacks(occ, 3, pos) | get_ray_attacks(occ, 4, pos) | get_ray_attacks(occ,
@@ -56,7 +37,7 @@ fn get_q_attacks(me u64, he u64, pos int) u64 {
 	return attacks
 }
 
-fn get_p_attacks(me u64, he u64, pos int, plr bool) u64 {
+fn get_p_attacks(me u64, he u64, pos int, plr bool) u64 { // pawn
 	startpos := u64(71776119061282560)
 	occ := me | he
 	if plr { // upper player
@@ -80,15 +61,15 @@ fn get_p_attacks(me u64, he u64, pos int, plr bool) u64 {
 	return 0
 }
 
-fn get_k_attacks(me u64, pos int) u64 {
+fn get_k_attacks(me u64, pos int) u64 { // king
 	return filter_own_capture(me, king_attacks[pos])
 }
 
-fn get_n_attacks(me u64, pos int) u64 {
+fn get_n_attacks(me u64, pos int) u64 { // knight
 	return filter_own_capture(me, knight_attacks[pos])
 }
 
-fn get_attacks(b Board, pos int) ?u64 {
+fn get_pos_attacks(b Board, pos int) ?u64 { // general. Only used for getting the highlight position for player UI.
 	me := get_my(b, int(b.color) != 0)
 	he := get_my(b, int(b.color) == 0)
 	if b.pieces[b.color][Piece.pawn] & ones[pos] != 0 {
