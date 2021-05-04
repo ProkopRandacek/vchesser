@@ -1,4 +1,4 @@
-fn get_ray_attacks(occ u64, dir int, pos int) u64 {
+fn get_ray_attacks(occ u64, dir int, pos byte) u64 {
 	attacks := ray_attacks[dir * 64 + pos]
 	blocker := attacks & occ
 	if blocker > 0 {
@@ -8,36 +8,37 @@ fn get_ray_attacks(occ u64, dir int, pos int) u64 {
 	return attacks
 }
 
+[inline]
 fn filter_own_capture(my u64, attacks u64) u64 {
 	return attacks & ~my
 }
 
-fn get_b_attacks(me u64, he u64, pos int) u64 { // bishop
+fn get_b_attacks(me u64, he u64, pos byte) u64 { // bishop
 	occ := me | he
 	mut attacks := get_ray_attacks(occ, 1, pos) | get_ray_attacks(occ, 3, pos) | get_ray_attacks(occ,
 		5, pos) | get_ray_attacks(occ, 7, pos)
-	attacks = filter_own_capture(me, attacks)
+	attacks = attacks
 	return attacks
 }
 
-fn get_r_attacks(me u64, he u64, pos int) u64 { // rook
+fn get_r_attacks(me u64, he u64, pos byte) u64 { // rook
 	occ := me | he
 	mut attacks := get_ray_attacks(occ, 0, pos) | get_ray_attacks(occ, 2, pos) | get_ray_attacks(occ,
 		4, pos) | get_ray_attacks(occ, 6, pos)
-	attacks = filter_own_capture(me, attacks)
+	attacks = attacks
 	return attacks
 }
 
-fn get_q_attacks(me u64, he u64, pos int) u64 { // queen
+fn get_q_attacks(me u64, he u64, pos byte) u64 { // queen
 	occ := me | he
 	mut attacks := get_ray_attacks(occ, 0, pos) | get_ray_attacks(occ, 1, pos) | get_ray_attacks(occ,
 		2, pos) | get_ray_attacks(occ, 3, pos) | get_ray_attacks(occ, 4, pos) | get_ray_attacks(occ,
 		5, pos) | get_ray_attacks(occ, 6, pos) | get_ray_attacks(occ, 7, pos)
-	attacks = filter_own_capture(me, attacks)
+	attacks = attacks
 	return attacks
 }
 
-fn get_p_attacks(me u64, he u64, pos int, plr bool) u64 { // pawn
+fn get_p_attacks(me u64, he u64, pos byte, plr bool) u64 { // pawn
 	startpos := u64(71776119061282560)
 	occ := me | he
 	if plr { // upper player
@@ -61,15 +62,36 @@ fn get_p_attacks(me u64, he u64, pos int, plr bool) u64 { // pawn
 	return 0
 }
 
-fn get_k_attacks(me u64, pos int) u64 { // king
-	return filter_own_capture(me, king_attacks[pos])
+fn get_k_attacks(me u64, occ u64, dang u64, pos byte, b Board) u64 { // king
+	mut attacks := king_attacks[pos]
+	if pos == 4 { // upper player castling?
+		if b.can_castle(0) && (((ones[2] | ones[3]) & occ) == 0)
+			&& (((ones[2] | ones[3] | ones[4]) & dang) == 0) {
+			attacks |= ones[2]
+		}
+		if b.can_castle(1) && (((ones[5] | ones[6]) & occ) == 0)
+			&& (((ones[4] | ones[5] | ones[6]) & dang) == 0) {
+			attacks |= ones[6]
+		}
+	}
+	if pos == 7 * 8 + 4 { // lower player castling?
+		if b.can_castle(2) && (((ones[7 * 8 + 2] | ones[7 * 8 + 3]) & occ) == 0)
+			&& (((ones[7 * 8 + 2] | ones[7 * 8 + 3] | ones[7 * 8 + 4]) & dang) == 0) {
+			attacks |= ones[7 * 8 + 2]
+		}
+		if b.can_castle(3) && (((ones[7 * 8 + 5] | ones[7 * 8 + 6]) & occ) == 0)
+			&& (((ones[7 * 8 + 4] | ones[7 * 8 + 5] | ones[7 * 8 + 6]) & dang) == 0) {
+			attacks |= ones[7 * 8 + 6]
+		}
+	}
+	return attacks
 }
 
-fn get_n_attacks(me u64, pos int) u64 { // knight
-	return filter_own_capture(me, knight_attacks[pos])
+fn get_n_attacks(me u64, pos byte) u64 { // knight
+	return knight_attacks[pos]
 }
 
-fn get_pos_attacks(b Board, pos int) ?u64 { // general. Only used for getting the highlight position for player UI.
+fn get_pos_attacks(b Board, pos byte) ?u64 { // Only used for getting the highlight position for player UI.
 	me := get_my(b, int(b.color) != 0)
 	he := get_my(b, int(b.color) == 0)
 	if b.pieces[b.color][Piece.pawn] & ones[pos] != 0 {
@@ -80,10 +102,10 @@ fn get_pos_attacks(b Board, pos int) ?u64 { // general. Only used for getting th
 		return get_n_attacks(me, pos)
 	} else if b.pieces[b.color][Piece.bishop] & ones[pos] != 0 {
 		return get_b_attacks(me, he, pos)
-	} else if b.pieces[b.color][Piece.king] & ones[pos] != 0 {
-		return get_k_attacks(me, pos)
 	} else if b.pieces[b.color][Piece.queen] & ones[pos] != 0 {
 		return get_q_attacks(me, he, pos)
+	} else if b.pieces[b.color][Piece.king] & ones[pos] != 0 {
+		return get_k_attacks(me, me | he, b.attacks[b.color.neg()], pos, b)
 	}
-	return error('no piece on that position')
+	panic('get_pos_attacks: no piece of my color on that position')
 }

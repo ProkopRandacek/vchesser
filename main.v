@@ -3,8 +3,8 @@
 // false = lower = 0
 import readline
 
-fn next(s u64, p int, o int) int {
-	mut pos := p
+fn next(s u64, p byte, o i8) byte {
+	mut pos := int(p)
 	for {
 		pos += o
 		if pos > 63 {
@@ -18,7 +18,7 @@ fn next(s u64, p int, o int) int {
 			break
 		}
 	}
-	return pos
+	return byte(pos)
 }
 
 fn main() {
@@ -27,13 +27,15 @@ fn main() {
 
 	mut board := Board{}
 	board.init_default()
-	mut pos := 0
 	mut moving := false
 	mut src := 0
 	mut selecting := get_my(board, int(board.color) != 0)
+	mut pos := next(selecting, 0, 1)
 	for {
 		fboardprint(board, pos, if moving { selecting } else { 0 })
 		inp := rl.read_char()
+		board.refresh_attacks(Color.black)
+		board.refresh_attacks(Color.white)
 		match inp {
 			110 { // next
 				pos = next(selecting, pos, 1)
@@ -48,7 +50,8 @@ fn main() {
 				if moving {
 					continue
 				}
-				selecting = get_pos_attacks(board, pos) or { return }
+				selecting = filter_own_capture(get_my(board, int(board.color) != 0), get_pos_attacks(board,
+					pos) or { return })
 				if selecting == 0 { // if no available moves for this piece, dont move
 					selecting = get_my(board, int(board.color) != 0)
 					continue
@@ -85,6 +88,10 @@ fn main() {
 
 				selecting = get_my(board, int(board.color) != 0)
 				pos = next(selecting, pos, 1)
+			}
+			105 {
+				print_internal_info(board)
+				rl.read_char()
 			}
 			else {
 				continue

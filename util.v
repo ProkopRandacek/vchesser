@@ -1,18 +1,24 @@
-fn C.__builtin_ctzl(u64) int
-fn C.__builtin_clzl(u64) int
+fn C.__builtin_ctzl(u64) byte
+fn C.__builtin_clzl(u64) byte
+fn C.__builtin_popcountl(u64) byte
 
 [inline]
-fn clz(i u64) int {
+fn clz(i u64) byte {
 	return C.__builtin_clzl(i)
 }
 
 [inline]
-fn ctz(i u64) int {
+fn ctz(i u64) byte {
 	return C.__builtin_ctzl(i)
 }
 
 [inline]
-fn mask(x int, y int) u64 {
+fn popcount(i u64) byte {
+	return C.__builtin_popcountl(i)
+}
+
+[inline]
+fn mask(x byte, y byte) u64 {
 	return ones[y * 8 + x]
 }
 
@@ -26,7 +32,7 @@ fn get_my(b Board, plr bool) u64 {
 }
 
 [inline]
-fn bit_scan(bb u64, reverse bool) int {
+fn bit_scan(bb u64, reverse bool) byte {
 	if reverse {
 		return 63 - C.__builtin_clzl(bb)
 	} else {

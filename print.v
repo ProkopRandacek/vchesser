@@ -60,7 +60,7 @@ fn bb2char(bb u64, mut board []rune, c rune) {
 	}
 }
 
-fn fboardprint(b Board, pos int, hl u64) {
+fn fboardprint(b Board, pos byte, hl u64) {
 	mut board := []rune{len: 64, init: ` `}
 
 	bb2char(b.pieces[Color.black][Piece.pawn], mut board, `♟`)
@@ -106,6 +106,13 @@ fn fboardprint(b Board, pos int, hl u64) {
 	}
 	println(' ╚════════════════╝')
 	println('  A B C D E F G H')
+}
+
+fn print_internal_info(b Board) {
 	case := if b.color == .white { 'lower' } else { 'upper' }
 	println('player: $b.color ($case case)')
+	println('castling 0: ${b.can_castle(0)}')
+	println('castling 1: ${b.can_castle(1)}')
+	println('castling 2: ${b.can_castle(2)}')
+	println('castling 3: ${b.can_castle(3)}')
 }
