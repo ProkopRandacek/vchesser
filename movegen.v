@@ -80,23 +80,3 @@ fn get_k_attacks(occ u64, dang u64, pos byte, b Board) u64 { // king
 fn get_n_attacks(me u64, pos byte) u64 { // knight
 	return knight_attacks[pos]
 }
-
-fn get_pos_attacks(b Board, pos byte) ?u64 { // Only used for getting the highlight position for player UI.
-	me := get_my(b, int(b.color) != 0)
-	he := get_my(b, int(b.color) == 0)
-	occ := me | he
-	if b.pieces[b.color][Piece.pawn] & ones[pos] != 0 {
-		return get_p_attacks(me, he, pos, int(b.color) != 0)
-	} else if b.pieces[b.color][Piece.rook] & ones[pos] != 0 {
-		return get_r_attacks(occ, pos)
-	} else if b.pieces[b.color][Piece.knight] & ones[pos] != 0 {
-		return get_n_attacks(me, pos)
-	} else if b.pieces[b.color][Piece.bishop] & ones[pos] != 0 {
-		return get_b_attacks(occ, pos)
-	} else if b.pieces[b.color][Piece.queen] & ones[pos] != 0 {
-		return get_q_attacks(occ, pos)
-	} else if b.pieces[b.color][Piece.king] & ones[pos] != 0 {
-		return get_k_attacks(occ, b.attacks[b.color.neg()], pos, b)
-	}
-	panic('get_pos_attacks: no piece of my color on that position')
-}

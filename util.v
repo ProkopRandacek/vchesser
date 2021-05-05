@@ -57,3 +57,12 @@ fn next(s u64, p byte, o i8) byte {
 	}
 	return byte(pos)
 }
+
+fn index_of(a []rune, r rune) int {
+	for i in 0 .. a.len {
+		if a[int(i)] == r {
+			return int(i)
+		}
+	}
+	return -1
+}

@@ -22,7 +22,7 @@ mut:
 	pieces  [][]u64 = [][]u64{len: 2, init: []u64{len: 6, init: 0}} // 2d array 2x6 -> 2 players with 6 bitboards(/pieces) each.
 	color   Color
 	attacks []u64 = []u64{len: 2, init: 0}
-	bits    byte // rightmost 4 bits are for castling
+	bits    byte  = 0b000_1111
 }
 
 fn (b Board) can_castle(pos byte) bool {
@@ -34,22 +34,6 @@ fn (mut b Board) disable_castle(pos byte) {
 	mask := byte(1 << pos)
 	b.bits &= ~mask
 }
-const (
-	fen2piece = map{
-		`p`: Piece.pawn
-		`r`: Piece.rook
-		`n`: Piece.knight
-		`b`: Piece.bishop
-		`k`: Piece.king
-		`q`: Piece.queen
-		`P`: Piece.pawn
-		`R`: Piece.rook
-		`N`: Piece.knight
-		`B`: Piece.bishop
-		`K`: Piece.king
-		`Q`: Piece.queen
-	}
-)
 
 fn (mut b Board) load_fen(fen string) {
 	for i in 0 .. 2 {
@@ -67,8 +51,8 @@ fn (mut b Board) load_fen(fen string) {
 			if c.is_digit() {
 				x += byte(c)
 			} else {
-				color := if c.is_capital() {Color.white} else {Color.black}
-				b.pieces[color][fen2piece[c]] |= mask(x, y)
+				color := if c.is_capital() { Color.white } else { Color.black }
+				b.pieces[color][char2piece[c]] |= mask(x, y)
 				x++
 			}
 		}
@@ -81,7 +65,7 @@ fn (b Board) piece_on(pos byte, color Color) Piece { // return what piece is on 
 			return Piece(i)
 		}
 	}
-	panic('piece_on(): asked position is empty') // Considering when this fnc is called, this should never happen
+	panic('piece_on(): asked position is empty\npos: $pos\nclr: $color.str()')
 }
 
 fn (mut b Board) clear_pos(pos byte) { // Clears position (sets all bitboards' bits on position `pos` to zero )
@@ -193,6 +177,9 @@ fn (mut b Board) apply_move(m Move) Board {
 	nb.clear_pos(m.src)
 	nb.clear_pos(m.dst) // when capturing
 	nb.pieces[b.color][piece] |= ones[m.dst]
+
+	nb.refresh_attacks(Color.black)
+	nb.refresh_attacks(Color.white)
 
 	return nb
 }

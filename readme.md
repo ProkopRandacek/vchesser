@@ -1,9 +1,11 @@
 # vchesser
-- [x] fancy tui
+- [x] ui
+  - [x] promotion user input
 - [ ] move gen
   - [x] regular moves
   - [x] castling
   - [ ] check/mate logic
   - [ ] en passant
-- [ ] promotion user input
 - [ ] minimax
+
+![](./ui.png)
