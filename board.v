@@ -34,22 +34,45 @@ fn (mut b Board) disable_castle(pos byte) {
 	mask := byte(1 << pos)
 	b.bits &= ~mask
 }
+const (
+	fen2piece = map{
+		`p`: Piece.pawn
+		`r`: Piece.rook
+		`n`: Piece.knight
+		`b`: Piece.bishop
+		`k`: Piece.king
+		`q`: Piece.queen
+		`P`: Piece.pawn
+		`R`: Piece.rook
+		`N`: Piece.knight
+		`B`: Piece.bishop
+		`K`: Piece.king
+		`Q`: Piece.queen
+	}
+)
 
-fn (mut b Board) init_default() { // sets the board state to default (used only at the start of the game)
-	b.color = Color.white
-	b.bits = 0b0000_1111
-	b.pieces[Color.black][Piece.pawn] = u64(65280)
-	b.pieces[Color.black][Piece.rook] = u64(129)
-	b.pieces[Color.black][Piece.knight] = u64(66)
-	b.pieces[Color.black][Piece.bishop] = u64(36)
-	b.pieces[Color.black][Piece.king] = u64(16)
-	b.pieces[Color.black][Piece.queen] = u64(8)
-	b.pieces[Color.white][Piece.pawn] = u64(71776119061217280)
-	b.pieces[Color.white][Piece.rook] = u64(9295429630892703744)
-	b.pieces[Color.white][Piece.knight] = u64(4755801206503243776)
-	b.pieces[Color.white][Piece.bishop] = u64(2594073385365405696)
-	b.pieces[Color.white][Piece.king] = u64(1152921504606846976)
-	b.pieces[Color.white][Piece.queen] = u64(576460752303423488)
+fn (mut b Board) load_fen(fen string) {
+	for i in 0 .. 2 {
+		for j in 0 .. 6 {
+			b.pieces[i][j] = 0
+		}
+	}
+	mut x := byte(0)
+	mut y := byte(0)
+	for c in fen {
+		if c == `/` {
+			y++
+			x = 0
+		} else {
+			if c.is_digit() {
+				x += byte(c)
+			} else {
+				color := if c.is_capital() {Color.white} else {Color.black}
+				b.pieces[color][fen2piece[c]] |= mask(x, y)
+				x++
+			}
+		}
+	}
 }
 
 fn (b Board) piece_on(pos byte, color Color) Piece { // return what piece is on given position
@@ -70,9 +93,10 @@ fn (mut b Board) clear_pos(pos byte) { // Clears position (sets all bitboards' b
 	}
 }
 
-fn (mut b Board) refresh_attacks(c Color) {
+fn (mut b Board) refresh_attacks(c Color) { // maybe somehow generalize this idk TODO
 	me := get_my(b, int(c) != 0)
 	he := get_my(b, int(c) == 0)
+	occ := me | he
 	mut att := u64(0)
 
 	mut bb := b.pieces[c][Piece.pawn] // PAWN
@@ -84,7 +108,7 @@ fn (mut b Board) refresh_attacks(c Color) {
 	bb = b.pieces[c][Piece.rook] // ROOK
 	i = ctz(bb)
 	for _ in 0 .. popcount(bb) {
-		att |= get_r_attacks(me, he, i)
+		att |= get_r_attacks(occ, i)
 		i = next(bb, i, 1)
 	}
 	bb = b.pieces[c][Piece.knight] // KNIGHT
@@ -96,19 +120,19 @@ fn (mut b Board) refresh_attacks(c Color) {
 	bb = b.pieces[c][Piece.bishop] // BISHOP
 	i = ctz(bb)
 	for _ in 0 .. popcount(bb) {
-		att |= get_b_attacks(me, he, i)
+		att |= get_b_attacks(occ, i)
 		i = next(bb, i, 1)
 	}
 	bb = b.pieces[c][Piece.queen] // QUEEN
 	i = ctz(bb)
 	for _ in 0 .. popcount(bb) {
-		att |= get_q_attacks(me, he, i)
+		att |= get_q_attacks(occ, i)
 		i = next(bb, i, 1)
 	}
 	bb = b.pieces[c][Piece.king] // KING
 	i = ctz(bb)
 	for _ in 0 .. popcount(bb) {
-		att |= get_k_attacks(me, me | he, b.attacks[b.color.neg()], i, b)
+		att |= get_k_attacks(occ, b.attacks[b.color.neg()], i, b)
 		i = next(bb, i, 1)
 	}
 

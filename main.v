@@ -4,7 +4,7 @@ fn main() {
 	mut rl := readline.Readline{}
 	rl.enable_raw_mode_nosig()
 	mut board := Board{}
-	board.init_default()
+	board.load_fen("rnbqkbnr/pppppppp/////PPPPPPPP/RNBQKBNR")
 	mut moving := false
 	mut src := 0
 	mut selecting := get_my(board, int(board.color) != 0)

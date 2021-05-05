@@ -79,9 +79,8 @@ fn print_board(b Board, pos byte, hl u64) {
 
 	mut m := u64(1)
 	println('  A B C D E F G H')
-	println(' ╔════════════════╗')
 	for y in 0 .. 8 {
-		print('${8 - y}║')
+		print(8 - y)
 		for x in 0 .. 8 {
 			mut t := '${board[y * 8 + x]} '
 
@@ -102,9 +101,8 @@ fn print_board(b Board, pos byte, hl u64) {
 
 			m = m << 1
 		}
-		println('║${8 - y}')
+		println(8 - y)
 	}
-	println(' ╚════════════════╝')
 	println('  A B C D E F G H')
 }
 
