@@ -150,6 +150,15 @@ fn (mut b Board) apply_move(m Move) Board {
 			b.disable_castle(3)
 		}
 	}
+	if m.dst == 0 { // also disable castling if rook is captured
+		b.disable_castle(0)
+	} else if m.dst == 7 {
+		b.disable_castle(1)
+	} else if m.dst == 7 * 8 {
+		b.disable_castle(2)
+	} else if m.dst == 7 * 8 + 7 {
+		b.disable_castle(3)
+	}
 
 	mut nb := b
 

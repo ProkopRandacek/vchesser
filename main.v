@@ -1,5 +1,5 @@
 import os
-import term
+// import term
 
 fn main() {
 	mut board := Board{}
@@ -9,7 +9,7 @@ fn main() {
 	for {
 		print_board(board, hl)
 		inp := os.input('move: ')
-		term.clear()
+		// term.clear()
 		match inp {
 			'q', 'quit' {
 				if os.input('really? ').to_lower() == 'yes' {

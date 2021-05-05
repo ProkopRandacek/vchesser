@@ -1,7 +1,10 @@
 // vim: filetype=vlang
 const (
 	abc        = [`a`, `b`, `c`, `d`, `e`, `f`, `g`, `h`]
-	icons      = [`♙`, `♘`, `♗`, `♖`, `♕`, `♔`, `♟`, `♞`, `♝`, `♜`, `♛`, `♚`] // I use unicode's white as black and vise versa because the pieces are drawn black instead of white
+	icons      = [`♙`, `♘`, `♗`, `♖`, `♕`, `♔`, `♟`, `♞`, `♝`, `♜`, `♛`,
+		`♚`,
+	] // I use unicode's white as black and vise versa because the pieces are drawn black instead of white
+	// icons      = [`p`, `k`, `b`, `r`, `q`, `k`, `P`, `K`, `B`, `R`, `Q`, `K`]
 	b64        = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 	char2piece = map{
 		`p`: Piece.pawn
