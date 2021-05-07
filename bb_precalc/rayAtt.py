@@ -28,4 +28,4 @@ for i in range(8):
             print(out)
             out = ""
         out += add + ", "
-print()
+print(out)

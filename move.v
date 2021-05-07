@@ -24,3 +24,7 @@ fn move_from_string(s string) Move {
 	}
 	return Move{byte(srcy * 8 + srcx), byte(dsty * 8 + dstx), prom}
 }
+
+fn (m Move) str() string {
+	return '$m.src -> $m.dst ($m.promo.str())'
+}

@@ -4,7 +4,7 @@ for _ in range(64):
 
 for x in range(8):
     for y in range(8):
-        for xo, yo in [[0, 1]]:
+        for xo, yo in [[-1, -1], [1, -1]]:
             if y + yo < 0 or y + yo >= 8:
                 continue
             if x + xo < 0 or x + xo >= 8:
@@ -20,4 +20,4 @@ for j in range(64):
         print(out)
         out = ""
     out += add + ", "
-print()
+print(out)

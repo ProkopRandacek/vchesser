@@ -26,20 +26,16 @@ mut:
 }
 
 fn (b Board) can_castle(pos byte) bool {
-	mask := byte(1 << pos)
-	return (b.bits & mask) != 0
+	return (b.bits & byte(1 << pos)) != 0
 }
 
 fn (mut b Board) disable_castle(pos byte) {
-	mask := byte(1 << pos)
-	b.bits &= ~mask
+	b.bits &= ~byte(1 << pos)
 }
 
 fn (mut b Board) load_fen(fen string) {
-	for i in 0 .. 2 {
-		for j in 0 .. 6 {
-			b.pieces[i][j] = 0
-		}
+	for i in 0 .. 12 {
+		b.pieces[i / 6][i % 6] = 0
 	}
 	mut x := byte(0)
 	mut y := byte(0)
@@ -49,7 +45,7 @@ fn (mut b Board) load_fen(fen string) {
 			x = 0
 		} else {
 			if c.is_digit() {
-				x += byte(c)
+				x += (c - 48)
 			} else {
 				color := if c.is_capital() { Color.white } else { Color.black }
 				b.pieces[color][char2piece[c]] |= mask(x, y)
@@ -59,6 +55,7 @@ fn (mut b Board) load_fen(fen string) {
 	}
 }
 
+[direct_array_access]
 fn (b Board) piece_on(pos byte, color Color) Piece { // return what piece is on given position
 	for i in 0 .. 6 {
 		if (b.pieces[color][i] & ones[pos]) != 0 {
@@ -77,57 +74,26 @@ fn (mut b Board) clear_pos(pos byte) { // Clears position (sets all bitboards' b
 	}
 }
 
-fn (mut b Board) refresh_attacks(c Color) { // maybe somehow generalize this idk TODO
+//[direct_array_access]
+fn (mut b Board) refresh_attacks(c Color) {
 	me := get_my(b, int(c) != 0)
 	he := get_my(b, int(c) == 0)
 	occ := me | he
-	mut att := u64(0)
 
-	mut bb := b.pieces[c][Piece.pawn] // PAWN
-	mut i := ctz(bb)
-	for _ in 0 .. popcount(bb) {
-		att |= get_p_attacks(me, he, i, int(c) != 0)
-		i = next(bb, i, 1)
-	}
-	bb = b.pieces[c][Piece.rook] // ROOK
-	i = ctz(bb)
-	for _ in 0 .. popcount(bb) {
-		att |= get_r_attacks(occ, i)
-		i = next(bb, i, 1)
-	}
-	bb = b.pieces[c][Piece.knight] // KNIGHT
-	i = ctz(bb)
-	for _ in 0 .. popcount(bb) {
-		att |= get_n_attacks(me, i)
-		i = next(bb, i, 1)
-	}
-	bb = b.pieces[c][Piece.bishop] // BISHOP
-	i = ctz(bb)
-	for _ in 0 .. popcount(bb) {
-		att |= get_b_attacks(occ, i)
-		i = next(bb, i, 1)
-	}
-	bb = b.pieces[c][Piece.queen] // QUEEN
-	i = ctz(bb)
-	for _ in 0 .. popcount(bb) {
-		att |= get_q_attacks(occ, i)
-		i = next(bb, i, 1)
-	}
-	bb = b.pieces[c][Piece.king] // KING
-	i = ctz(bb)
-	for _ in 0 .. popcount(bb) {
-		att |= get_k_attacks(occ, b.attacks[b.color.neg()], i, b)
-		i = next(bb, i, 1)
-	}
-
-	b.attacks[c] = att
+	b.attacks[c] |= arr_or(get_ns_attacks(b.pieces[c][Piece.knight]))
+	b.attacks[c] |= arr_or(get_bs_attacks(occ, b.pieces[c][Piece.bishop]))
+	b.attacks[c] |= arr_or(get_rs_attacks(occ, b.pieces[c][Piece.rook]))
+	b.attacks[c] |= arr_or(get_qs_attacks(occ, b.pieces[c][Piece.queen]))
+	b.attacks[c] |= arr_or(get_ps_attacks(me, he, b.pieces[c][Piece.pawn], int(c) != 0))
+	b.attacks[c] |= get_k_attacks(occ, b.attacks[c], b.pieces[c][Piece.king], b)
 }
 
-fn (mut b Board) apply_move(m Move) Board {
+fn (old_b Board) apply_move(m Move) Board {
 	mut piece := m.promo
+	mut b := Board{old_b.pieces.clone(), old_b.color, [u64(0), 0], old_b.bits}
 
 	if m.promo == Piece.empty {
-		piece = b.piece_on(m.src, b.color)
+		piece = old_b.piece_on(m.src, b.color)
 	}
 
 	// disabling castling moves
@@ -160,35 +126,32 @@ fn (mut b Board) apply_move(m Move) Board {
 		b.disable_castle(3)
 	}
 
-	mut nb := b
-
 	// move rook when castling
 	if piece == Piece.king {
 		if m.src == 4 { // upper king
 			if m.dst == 2 { // castling left
-				nb.pieces[b.color][Piece.rook] |= ones[3]
-				nb.clear_pos(0)
+				b.pieces[b.color][Piece.rook] |= ones[3]
+				b.clear_pos(0)
 			} else if m.dst == 6 { // castling right
-				nb.pieces[b.color][Piece.rook] |= ones[5]
-				nb.clear_pos(7)
+				b.pieces[b.color][Piece.rook] |= ones[5]
+				b.clear_pos(7)
 			}
 		} else if m.src == 7 * 8 + 4 { // lower king
 			if m.dst == 7 * 8 + 2 { // castling left
-				nb.pieces[b.color][Piece.rook] |= ones[7 * 8 + 3]
-				nb.clear_pos(7 * 8 + 0)
+				b.pieces[b.color][Piece.rook] |= ones[7 * 8 + 3]
+				b.clear_pos(7 * 8 + 0)
 			} else if m.dst == 7 * 8 + 6 { // castling right
-				nb.pieces[b.color][Piece.rook] |= ones[7 * 8 + 5]
-				nb.clear_pos(7 * 8 + 7)
+				b.pieces[b.color][Piece.rook] |= ones[7 * 8 + 5]
+				b.clear_pos(7 * 8 + 7)
 			}
 		}
 	}
 
-	nb.clear_pos(m.src)
-	nb.clear_pos(m.dst) // when capturing
-	nb.pieces[b.color][piece] |= ones[m.dst]
+	b.clear_pos(m.src)
+	b.clear_pos(m.dst) // when capturing
+	b.pieces[b.color][piece] |= ones[m.dst]
 
-	nb.refresh_attacks(Color.black)
-	nb.refresh_attacks(Color.white)
-
-	return nb
+	// b.refresh_attacks(Color.black)
+	// b.refresh_attacks(Color.white)
+	return b
 }

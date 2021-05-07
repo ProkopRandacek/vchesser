@@ -1,7 +1,12 @@
 fn C.__builtin_ctzl(u64) byte
+
+// GCC builtin functions
 fn C.__builtin_clzl(u64) byte
+
+// probably works with clang too
 fn C.__builtin_popcountl(u64) byte
 
+// holy trinity
 [inline]
 fn clz(i u64) byte {
 	return C.__builtin_clzl(i)
@@ -17,12 +22,12 @@ fn popcount(i u64) byte {
 	return C.__builtin_popcountl(i)
 }
 
-[inline]
+[direct_array_access; inline]
 fn mask(x byte, y byte) u64 {
 	return ones[y * 8 + x]
 }
 
-[inline]
+[direct_array_access; inline]
 fn get_my(b Board, plr bool) u64 {
 	mut my := u64(0)
 	for i in b.pieces[int(plr)] {
@@ -34,30 +39,13 @@ fn get_my(b Board, plr bool) u64 {
 [inline]
 fn bit_scan(bb u64, reverse bool) byte {
 	if reverse {
-		return 63 - C.__builtin_clzl(bb)
+		return 63 - clz(bb)
 	} else {
-		return C.__builtin_ctzl(bb)
+		return ctz(bb)
 	}
 }
 
-fn next(s u64, p byte, o i8) byte {
-	mut pos := int(p)
-	for {
-		pos += o
-		if pos > 63 {
-			pos = 0
-		}
-		if pos < 0 {
-			pos = 64
-			continue
-		}
-		if (ones[pos] & s) != 0 {
-			break
-		}
-	}
-	return byte(pos)
-}
-
+[direct_array_access; inline]
 fn index_of(a []rune, r rune) int {
 	for i in 0 .. a.len {
 		if a[int(i)] == r {
@@ -65,4 +53,24 @@ fn index_of(a []rune, r rune) int {
 		}
 	}
 	return -1
+}
+
+[inline]
+fn arr_or(bb []u64) u64 {
+	mut o := u64(0)
+	for x in bb {
+		o |= x
+	}
+	return o
+}
+
+[direct_array_access]
+fn bb_to_poss(bb u64) []byte {
+	mut p := []byte{cap: int(popcount(bb))}
+	for i in ctz(bb) .. 64 - clz(bb) {
+		if ones[i] & bb != 0 {
+			p << i
+		}
+	}
+	return p
 }

@@ -46,6 +46,10 @@ fn print_board(b Board, hl u64) {
 
 fn print_internal_info(b Board) {
 	case := if b.color == .white { 'lower' } else { 'upper' }
+	println('0:')
+	bb_print(b.attacks[0])
+	println('1:')
+	bb_print(b.attacks[1])
 	println('player: $b.color ($case case)')
 	println('castling 0: ${b.can_castle(0)}')
 	println('castling 1: ${b.can_castle(1)}')
