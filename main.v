@@ -4,19 +4,18 @@ import os
 fn main() {
 	println('start')
 	mut board := Board{}
-	// board.load_fen('rnbqkbnr/pppppppp/////PPPPPPPP/RNBQKBNR')
-	// board.load_fen('rnbqkbnr///////RNBQKBNR')
-	// board.load_fen('/1P//2Q2Q///3K2P/')
-	board.load_fen('///2K//2k//')
+	board.load_fen('rnbqkbnr/pppppppp/////PPPPPPPP/RNBQKBNR')
+	// board.load_fen('///2K//2k//n6n')
 	board.color = Color.white
 	// term.clear()
 	mut hl := u64(0)
 	for {
 		board.refresh_attacks(board.color.neg())
 		l := all_moves(board, board.color).to_array()
-		hl = 0
-		for i in l {
-			hl |= ones[i.dst]
+
+		if l.len == 0 {
+			println('CHECKMATE: $board.color.neg() won')
+			break
 		}
 
 		println('possible moves: $l.len')

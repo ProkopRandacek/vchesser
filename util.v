@@ -1,9 +1,7 @@
-fn C.__builtin_ctzl(u64) byte
-
 // GCC builtin functions
-fn C.__builtin_clzl(u64) byte
-
 // probably works with clang too
+fn C.__builtin_ctzl(u64) byte
+fn C.__builtin_clzl(u64) byte
 fn C.__builtin_popcountl(u64) byte
 
 // holy trinity

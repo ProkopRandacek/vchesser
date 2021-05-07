@@ -134,13 +134,9 @@ fn filter_own_capture(my u64, attacks u64) u64 {
 
 [direct_array_access; inline]
 fn filter_own_captures(my u64, attacks []u64) []u64 {
-	mut filtered := []u64{cap: attacks.len}
-	for a in attacks {
-		for i in ctz(a) .. 64 - clz(a) {
-			if ones[i] & a != 0 {
-				filtered << filter_own_capture(my, a)
-			}
-		}
+	mut filtered := []u64{len: attacks.len}
+	for i in 0 .. attacks.len {
+		filtered[i] = filter_own_capture(my, attacks[i])
 	}
 	return filtered
 }
@@ -202,7 +198,7 @@ fn all_moves(b Board, c Color) &List {
 		} else {
 			pos = pos.next // next move
 		}
-		if pos.next == 0 {
+		if pos.next == 0 { // if at the end, break the loop
 			break
 		}
 	}

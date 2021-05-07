@@ -4,7 +4,7 @@
 - [ ] move gen
   - [x] regular moves
   - [x] castling
-  - [ ] check/mate logic
+  - [x] check/mate logic
   - [ ] en passant
 - [ ] minimax
 
