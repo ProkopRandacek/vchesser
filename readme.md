@@ -1,11 +1,15 @@
 # vchesser
 - [x] ui
   - [x] promotion user input
-- [ ] move gen
+- [x] move gen
   - [x] regular moves
-  - [x] castling
   - [x] check/mate logic
-  - [ ] en passant
-- [ ] minimax
+  - [x] castling
+  - [ ] pawn promotion
+  - [ ] ~~en passant~~
+- [ ] AI
+  - [ ] evaluation
+  - [ ] search
+  - [ ] moves sort
 
 ![](./ui.png)
