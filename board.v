@@ -53,6 +53,8 @@ fn (mut b Board) load_fen(fen string) {
 			}
 		}
 	}
+	b.refresh_attacks(Color.black)
+	b.refresh_attacks(Color.white)
 }
 
 [direct_array_access]
@@ -62,7 +64,9 @@ fn (b Board) piece_on(pos byte, color Color) Piece { // return what piece is on 
 			return Piece(i)
 		}
 	}
-	panic('piece_on(): asked position is empty\npos: $pos\nclr: $color.str()')
+	println('board stat on error:')
+	print_board(b, ones[pos])
+	panic('piece_on(): asked position is empty pos: $pos clr: $color.str()')
 }
 
 fn (mut b Board) clear_pos(pos byte) { // Clears position (sets all bitboards' bits on position `pos` to zero )
@@ -90,10 +94,10 @@ fn (mut b Board) refresh_attacks(c Color) {
 
 fn (old_b Board) apply_move(m Move) Board {
 	mut piece := m.promo
-	mut b := Board{old_b.pieces.clone(), old_b.color, [u64(0), 0], old_b.bits}
+	mut b := Board{old_b.pieces.clone(), old_b.color.neg(), [u64(0), 0], old_b.bits}
 
 	if m.promo == Piece.empty {
-		piece = old_b.piece_on(m.src, b.color)
+		piece = old_b.piece_on(m.src, old_b.color)
 	}
 
 	// disabling castling moves
@@ -149,9 +153,9 @@ fn (old_b Board) apply_move(m Move) Board {
 
 	b.clear_pos(m.src)
 	b.clear_pos(m.dst) // when capturing
-	b.pieces[b.color][piece] |= ones[m.dst]
+	b.pieces[b.color.neg()][piece] |= ones[m.dst]
 
-	// b.refresh_attacks(Color.black)
-	// b.refresh_attacks(Color.white)
+	b.refresh_attacks(Color.black)
+	b.refresh_attacks(Color.white)
 	return b
 }

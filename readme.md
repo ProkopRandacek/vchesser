@@ -8,8 +8,14 @@
   - [ ] pawn promotion
   - [ ] ~~en passant~~
 - [ ] AI
-  - [ ] evaluation
-  - [ ] search
+  - [x] evaluation
+    - [x] pieces
+	- [x] center
+	- [x] moves
+	- [x] checkmate
+	- [ ] unsafe pieces
+  - [x] minimax search
+  - [ ] alfa beta pruning
   - [ ] moves sort
 
 ![](./ui.png)

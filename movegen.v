@@ -34,32 +34,25 @@ fn bbs_to_moves(src []byte, bb []u64, mut l List) {
 
 fn leaves_in_check(b Board, m Move) bool {
 	mut bn := b.apply_move(m)
-	my_king := bn.pieces[bn.color][Piece.king]
-	bn.color = bn.color.neg()
-	bn.refresh_attacks(bn.color)
+	my_king := bn.pieces[bn.color.neg()][Piece.king]
 	return (my_king & bn.attacks[bn.color]) != 0
 }
 
 [direct_array_access]
-fn all_moves(b Board, c Color) &List {
+fn all_moves(b Board) &List {
 	mut l := create([empty_move])
+	c := b.color
 
 	my := get_my(b, c == .black)
 	he := get_my(b, c == .white)
 	occ := my | he
 
-	bbs_to_moves(bb_to_poss(b.pieces[c][Piece.pawn]), get_ps_attacks(my, he, b.pieces[c][Piece.pawn],
-		c == .black), mut l)
-	bb_to_moves(ctz(b.pieces[c][Piece.king]), filter_own_capture(my, get_k_attacks(occ,
-		b.attacks[c.neg()], b.pieces[c][Piece.king], b)), mut l)
-	bbs_to_moves(bb_to_poss(b.pieces[c][Piece.rook]), filter_own_captures(my, get_rs_attacks(occ,
-		b.pieces[c][Piece.rook])), mut l)
-	bbs_to_moves(bb_to_poss(b.pieces[c][Piece.bishop]), filter_own_captures(my, get_bs_attacks(occ,
-		b.pieces[c][Piece.bishop])), mut l)
-	bbs_to_moves(bb_to_poss(b.pieces[c][Piece.queen]), filter_own_captures(my, get_qs_attacks(occ,
-		b.pieces[c][Piece.queen])), mut l)
-	bbs_to_moves(bb_to_poss(b.pieces[c][Piece.knight]), filter_own_captures(my, get_ns_attacks(b.pieces[c][Piece.knight])), mut
-		l)
+	bbs_to_moves(bb_to_poss(b.pieces[c][Piece.pawn]), get_ps_attacks(my, he, b.pieces[c][Piece.pawn], c == .black), mut l)
+	bb_to_moves(ctz(b.pieces[c][Piece.king]), filter_own_capture(my, get_k_attacks(occ, b.attacks[c.neg()], b.pieces[c][Piece.king], b)), mut l)
+	bbs_to_moves(bb_to_poss(b.pieces[c][Piece.rook]), filter_own_captures(my, get_rs_attacks(occ, b.pieces[c][Piece.rook])), mut l)
+	bbs_to_moves(bb_to_poss(b.pieces[c][Piece.bishop]), filter_own_captures(my, get_bs_attacks(occ, b.pieces[c][Piece.bishop])), mut l)
+	bbs_to_moves(bb_to_poss(b.pieces[c][Piece.queen]), filter_own_captures(my, get_qs_attacks(occ, b.pieces[c][Piece.queen])), mut l)
+	bbs_to_moves(bb_to_poss(b.pieces[c][Piece.knight]), filter_own_captures(my, get_ns_attacks(b.pieces[c][Piece.knight])), mut l)
 
 	mut pos := l.first
 	for {

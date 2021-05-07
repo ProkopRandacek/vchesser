@@ -5,20 +5,18 @@ fn main() {
 	println('start')
 	mut board := Board{}
 	board.load_fen('rnbqkbnr/pppppppp/////PPPPPPPP/RNBQKBNR')
-	// board.load_fen('///2K//2k//n6n')
 	board.color = Color.white
-	// term.clear()
 	mut hl := u64(0)
 	for {
-		board.refresh_attacks(board.color.neg())
-		l := all_moves(board, board.color).to_array()
+		l := all_moves(board).to_array()
 
 		if l.len == 0 {
-			println('CHECKMATE: $board.color.neg() won')
+			println('CHECKMATE: $board.color.neg().str() won')
 			break
 		}
 
 		println('possible moves: $l.len')
+		println('score: ${eval(board, l)}')
 		print_board(board, hl)
 		inp := os.input('move: ')
 		// term.clear()
@@ -36,6 +34,7 @@ fn main() {
 			}
 			else {
 				if check_move_string(inp) {
+					// HUMAN MOVE
 					move := move_from_string(inp)
 					if move !in l {
 						println('illegal move')
@@ -43,11 +42,20 @@ fn main() {
 					}
 					hl = ones[move.src] | ones[move.dst] // update last move highlight
 					board = board.apply_move(move)
-					board.color = board.color.neg() // switch player
+
+					// AI MOVE
+					aimove := ai_move(board)
+					board = board.apply_move(aimove)
 				} else {
 					println('input does not match the algebraic notation')
 				}
 			}
 		}
 	}
+}
+
+fn ai_move(b Board) Move {
+	println('AI is thinking...')
+	move := make_ai_move(b, 4)
+	return move
 }
